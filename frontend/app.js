@@ -39,6 +39,7 @@ let saved = JSON.parse(localStorage.getItem('qurilish-saved') || '[]');
 let activeCategory = 'all';
 let authToken = localStorage.getItem('qurilish-token') || '';
 let currentUser = JSON.parse(localStorage.getItem('qurilish-current-user') || 'null');
+let pendingCheckout = false;
 
 const money = v => new Intl.NumberFormat('uz-UZ').format(v) + ' UZS';
 
@@ -325,7 +326,15 @@ document.querySelector('#checkoutForm').addEventListener('submit', async event =
 
 document.addEventListener('click', e => {
   const button = e.target.closest('button');
-  if (button?.matches('.js-checkout')) openCheckout();
+  if (button?.matches('.js-checkout') && cart.length) {
+    if (currentUser) {
+      openCheckout();
+    } else {
+      pendingCheckout = true;
+      toast('Buyurtma berish uchun avval hisobingizga kiring.');
+      openAuth('login');
+    }
+  }
   if (button?.matches('.close-checkout')) document.querySelector('#checkoutDialog').close();
 });
 
@@ -417,6 +426,12 @@ authFormEl.addEventListener('submit', async event => {
     document.querySelector('.js-location span').textContent = currentUser.region;
   }
   renderShops();
+  if (pendingCheckout) {
+    pendingCheckout = false;
+    toast(`Xush kelibsiz, ${currentUser.name || 'mijoz'}! Buyurtmangizni yakunlang.`);
+    openCheckout();
+    return;
+  }
   const needsLocation = mode === 'register' && !currentUser.region && !localStorage.getItem('qurilish-location');
   toast(needsLocation ? `Xush kelibsiz, ${currentUser.name || 'mijoz'}! Endi hududingizni tanlang.` : `Xush kelibsiz, ${currentUser.name || 'mijoz'}!`);
   if (needsLocation) setTimeout(() => document.querySelector('.js-location').click(), 900);
@@ -506,7 +521,10 @@ document.addEventListener('click', event => {
   if (!button) return;
   if (button.matches('.js-auth')) currentUser ? openProfile() : openAuth('login');
   if (button.matches('.auth-switch')) openAuth(authDialogEl.dataset.mode === 'login' ? 'register' : 'login');
-  if (button.matches('.close-auth')) authDialogEl.close();
+  if (button.matches('.close-auth')) {
+    pendingCheckout = false;
+    authDialogEl.close();
+  }
   if (button.matches('.close-profile')) profileDialogEl.close();
   if (button.matches('.location-option')) setTimeout(renderShops, 0);
 });
