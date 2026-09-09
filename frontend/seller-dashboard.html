@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sotuvchi paneli — Qurilish Mollari</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="topbar page-width about-topbar">
+      <a class="brand" href="index.html"><img class="logo" src="logo.png" alt="Qurilish Mollari"><span>Qurilish<small>Mollari</small></span></a>
+      <div class="seller-header-actions">
+        <span class="seller-shop-badge" id="dashShopName">Do'kon</span>
+        <a class="button outline" href="index.html">Bosh sahifa</a>
+        <button class="button outline" id="sellerLogoutBtn" type="button">Chiqish</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="section" id="pendingView" hidden>
+      <div class="page-width auth-page-wrap">
+        <div class="auth-page-card" style="text-align:center">
+          <p class="sale-label">KUTILMOQDA</p>
+          <h2>Arizangiz ko'rib chiqilmoqda</h2>
+          <p>Do'koningiz hozircha admin tomonidan tasdiqlanmagan. Tasdiqlangach, mahsulot qo'sha olasiz va sotishni boshlaysiz. Odatda bu tez orada amalga oshadi — sahifani keyinroq qayta oching.</p>
+          <button class="button outline" id="pendingLogoutBtn" type="button">Chiqish</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="rejectedView" hidden>
+      <div class="page-width auth-page-wrap">
+        <div class="auth-page-card" style="text-align:center">
+          <p class="sale-label">RAD ETILDI</p>
+          <h2>Arizangiz tasdiqlanmadi</h2>
+          <p>Batafsil ma'lumot uchun biz bilan bog'laning: <strong>+998 97 964 42 12</strong></p>
+          <button class="button outline" id="rejectedLogoutBtn" type="button">Chiqish</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section seller-dash" id="dashboardView" hidden>
+      <div class="page-width">
+        <div class="dash-tabs">
+          <button class="dash-tab active" data-tab="shop" type="button">Do'kon</button>
+          <button class="dash-tab" data-tab="products" type="button">Mahsulotlar</button>
+          <button class="dash-tab" data-tab="orders" type="button">Buyurtmalar<em id="ordersBadge" hidden>0</em></button>
+        </div>
+
+        <div class="dash-panel" id="tab-shop">
+          <div class="section-title"><div><h2>Do'kon ma'lumotlari</h2><p>Xaridorlar ko'radigan ma'lumotlar</p></div></div>
+          <div id="shopView">
+            <div class="profile-row"><span>Do'kon nomi</span><b id="shopViewName">—</b></div>
+            <div class="profile-row"><span>Egasi</span><b id="shopViewOwner">—</b></div>
+            <div class="profile-row"><span>Telefon</span><b id="shopViewPhone">—</b></div>
+            <div class="profile-row"><span>Email</span><b id="shopViewEmail">—</b></div>
+            <div class="profile-row"><span>Hudud</span><b id="shopViewRegion">—</b></div>
+            <div class="profile-actions"><button class="button outline" type="button" id="shopEditBtn">Tahrirlash</button></div>
+          </div>
+          <form id="shopForm" hidden>
+            <label><span>Do'kon nomi</span><input id="shopNameInput" required></label>
+            <label><span>Egasining ism-familiyasi</span><input id="shopOwnerInput"></label>
+            <label><span>Telefon raqam</span><input id="shopPhoneInput" required></label>
+            <label><span>Email</span><input id="shopEmailInput" type="email"></label>
+            <label><span>Hudud</span><select id="shopRegionInput"></select></label>
+            <p class="auth-error" id="shopFormError" hidden></p>
+            <div class="profile-actions"><button class="button outline" type="button" id="shopCancelBtn">Bekor qilish</button><button class="button primary" type="submit">Saqlash</button></div>
+          </form>
+        </div>
+
+        <div class="dash-panel" id="tab-products" hidden>
+          <div class="section-title"><div><h2>Mahsulotlarim</h2><p>Do'koningizdagi mahsulotlar ro'yxati</p></div><button class="button primary" id="addProductBtn" type="button">+ Mahsulot qo'shish</button></div>
+          <form id="productForm" hidden>
+            <label><span>Mahsulot nomi</span><input id="productName" required></label>
+            <label><span>Kategoriya</span><select id="productCategory"></select></label>
+            <label><span>Narx (UZS)</span><input id="productPrice" type="number" min="0" required></label>
+            <label><span>O'lchov birligi</span><input id="productUnit" placeholder="dona, qop, metr..." required></label>
+            <label><span>Eski narx (ixtiyoriy, chegirma uchun)</span><input id="productOldPrice" type="number" min="0"></label>
+            <label><span>Mahsulot rasmi (JPG yoki PNG)</span><input id="productImageFile" type="file" accept="image/png,image/jpeg"></label>
+            <div class="image-preview" id="productImagePreview" hidden><img id="productImagePreviewImg" alt="Mahsulot rasmi"></div>
+            <p class="auth-error" id="productFormError" hidden></p>
+            <div class="profile-actions"><button class="button outline" type="button" id="productCancelBtn">Bekor qilish</button><button class="button primary" type="submit">Saqlash</button></div>
+          </form>
+          <div class="seller-products-grid" id="sellerProductsGrid"></div>
+          <p class="empty" id="sellerProductsEmpty" hidden>Hali mahsulot qo'shmadingiz.</p>
+        </div>
+
+        <div class="dash-panel" id="tab-orders" hidden>
+          <div class="section-title"><div><h2>Buyurtmalar</h2><p>Xaridorlardan kelgan buyurtmalar</p></div></div>
+          <div id="ordersList"></div>
+          <p class="empty" id="ordersEmpty" hidden>Hozircha buyurtmalar yo'q.</p>
+
+          <div class="section-title"><div><h2>Oylik statistika</h2><p>Har oy nechta buyurtma va qancha summaga sotilgan</p></div></div>
+          <div class="stats-table-wrap">
+            <table class="stats-table" id="statsTable">
+              <thead><tr><th>Oy</th><th>Buyurtmalar soni</th><th>Jami summa</th></tr></thead>
+              <tbody id="statsTableBody"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="statsEmpty" hidden>Hali buyurtma tarixi yo'q.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="config.js"></script>
+  <script src="seller.js"></script>
+</body>
+</html>

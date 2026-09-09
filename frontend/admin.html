@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin panel — Qurilish Mollari</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="topbar page-width about-topbar">
+      <a class="brand" href="index.html"><img class="logo" src="logo.png" alt="Qurilish Mollari"><span>Qurilish<small>Mollari</small></span></a>
+      <div class="seller-header-actions">
+        <button class="button outline" id="adminLogoutBtn" type="button" hidden>Chiqish</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="section" id="loginView">
+      <div class="page-width auth-page-wrap">
+        <div class="auth-page-card">
+          <p class="sale-label">ADMIN PANEL</p>
+          <h2>Boshqaruv paneliga kirish</h2>
+          <form id="adminLoginForm">
+            <label><span>Login</span><input id="adminUsername" required></label>
+            <label><span>Parol</span><input id="adminPassword" type="password" required></label>
+            <p class="auth-error" id="adminLoginError" hidden></p>
+            <button class="button primary" type="submit">Kirish</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="section seller-dash" id="adminPanelView" hidden>
+      <div class="page-width">
+        <div class="section-title"><div><h2>Umumiy statistika</h2><p>Platformadagi hozirgi holat</p></div></div>
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <div class="dash-tabs">
+          <button class="dash-tab active" data-status="pending" type="button">Kutilmoqda<em id="pendingBadge" hidden>0</em></button>
+          <button class="dash-tab" data-status="approved" type="button">Tasdiqlangan</button>
+          <button class="dash-tab" data-status="rejected" type="button">Rad etilgan</button>
+        </div>
+        <div id="sellersList"></div>
+        <p class="empty" id="sellersEmpty" hidden>Bu bo'limda sotuvchilar yo'q.</p>
+      </div>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+fastapi>=0.115
+uvicorn[standard]>=0.34
+sqlmodel>=0.0.22
+bcrypt>=4.2
+pyjwt>=2.10
+python-multipart>=0.0.20
+python-dotenv>=1.0
+psycopg[binary]>=3.2.10
+boto3>=1.35
+pillow>=11

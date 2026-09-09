@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Qurilish Mollari</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="topbar page-width">
+      <a class="brand" href="#home"><img class="logo" src="logo.png" alt="Qurilish Mollari"><span>Qurilish<small>Mollari</small></span></a>
+      <button class="location js-location">⌖ <span>Toshkent</span>⌄</button>
+      <form class="search" id="searchForm">
+        <label class="sr-only" for="searchInput">Mahsulot qidirish</label>
+        <span>⌕</span>
+        <input id="searchInput" type="search" placeholder="Sement, gips, quvur, g'isht qidiring...">
+        <button>Qidirish</button>
+      </form>
+      <button class="header-button js-saved">♡ <span>Saqlangan</span><em id="savedCount"></em></button>
+      <button class="header-button js-cart">🛒 <span>Savat</span><em id="cartCount"></em></button>
+    </div>
+    <nav class="categories-nav page-width">
+      <button class="nav-filter active" data-category="all">Hammasi</button>
+      <button class="nav-filter" data-category="brick">G'isht &amp; Bloklar</button>
+      <button class="nav-filter" data-category="paint">Bo'yoq &amp; Gips</button>
+      <button class="nav-filter" data-category="plumbing">Santexnika</button>
+      <button class="nav-filter" data-category="electric">Elektr</button>
+      <button class="nav-filter" data-category="wood">Yog'och</button>
+      <button class="nav-filter" data-category="tools">Asboblar</button>
+      <button class="nav-filter sale" data-category="sale">Aksiya 🔥</button>
+    </nav>
+  </header>
+  <main id="home">
+    <section class="hero">
+      <div class="page-width hero-grid">
+        <div>
+          <p class="badge">UZ O'ZBEKISTON №1 QURILISH BOZORI</p>
+          <h1>Solishtiring, Tanlang va<br><strong>Arzon Narxda</strong> Sotib Oling!</h1>
+          <p class="lead">Qurilish materiallari uchun 500+ do'konni taqqoslang. Eng yaxshi narxlarni toping va bevosita sotuvchi bilan bog'laning.</p>
+          <div class="hero-stats">
+            <span>🏪 <b>500+</b> Do'kon</span>
+            <span>📦 <b>12,000+</b> Mahsulot</span>
+            <span>⭐ <b>4.8</b> Reyting</span>
+          </div>
+          <div class="hero-actions">
+            <button class="button primary js-focus-search">Hozir Qidirish →</button>
+            <a class="button outline" href="#products">Katalogni Ko'rish</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="rings"></div>
+          <div class="hero-image"></div>
+          <div class="order-note"><b>📦</b><span><small>Bugun buyurtma</small><strong>+340 ta buyurtma ✓</strong></span></div>
+        </div>
+      </div>
+    </section>
+    <section class="section soft">
+      <div class="page-width">
+        <div class="section-title">
+          <div>
+            <h2>Kategoriyalar</h2>
+            <p>Kerakli materialni toping</p>
+          </div>
+          <button class="text-link js-show-all">Barchasini ko'rish →</button>
+        </div>
+        <div class="category-grid">
+          <button class="category-card" data-category="brick">
+            <i>🧱</i>
+            <b>G'isht &amp; Bloklar</b>
+            <small>240+</small>
+          </button>
+          <button class="category-card" data-category="paint">
+            <i>🎨</i>
+            <b>Bo'yoq &amp; Gips</b>
+            <small>185+</small>
+          </button>
+          <button class="category-card" data-category="plumbing">
+            <i>🚿</i>
+            <b>Santexnika</b>
+            <small>320+</small>
+          </button>
+          <button class="category-card" data-category="electric">
+            <i>⚡</i>
+            <b>Elektr</b>
+            <small>412+</small>
+          </button>
+          <button class="category-card" data-category="wood">
+            <i>▯</i>
+            <b>Yog'och &amp; Taxta</b>
+            <small>176+</small>
+          </button>
+          <button class="category-card" data-category="tools">
+            <i>🔧</i>
+            <b>Asbob-uskunalar</b>
+            <small>530+</small>
+          </button>
+        </div>
+      </div>
+    </section>
+    <section class="section shops">
+      <div class="page-width">
+        <div class="section-title">
+          <div>
+            <h2>Top Hamkor Do'konlar</h2>
+            <p>Ishonchli va tekshirilgan sotuvchilar</p>
+          </div>
+          <button class="text-link js-shops">Barcha do'konlar →</button>
+        </div>
+        <div class="shop-grid" id="shopGrid"></div>
+      </div>
+    </section>
+    <section class="section soft discounts">
+      <div class="page-width">
+        <p class="sale-label">🔥 AKSIYA</p>
+        <h2>Chegirmali Mahsulotlar</h2>
+        <div class="product-grid featured" id="discountGrid"></div>
+      </div>
+    </section>
+    <section class="section" id="products">
+      <div class="page-width">
+        <div class="section-title">
+          <div>
+            <h2>Ommabop Mahsulotlar</h2>
+            <p id="resultMessage">Eng ko'p xarid qilinadigan mahsulotlar</p>
+          </div>
+          <button class="text-link js-show-all">Barchasini ko'rish →</button>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+        <p class="empty" id="emptyState" hidden>Bu qidiruv bo'yicha mahsulot topilmadi.</p>
+      </div>
+    </section>
+    <section class="seller">
+      <div class="page-width seller-inner">
+        <h2>Sotuvchi sifatida ro'yxatdan o'ting</h2>
+        <p>10,000+ xaridor bilan bog'laning. Mahsulotlaringizni keng auditoriyaga taqdim eting.</p>
+        <div><a class="button primary" href="seller.html">Bepul Boshlash →</a><a class="button outline light" href="seller.html#shartlar">Batafsil Ma'lumot</a></div>
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div class="page-width footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#home"><img class="logo" src="logo.png" alt="Qurilish Mollari"><span>Qurilish Mollari</span></a>
+        <p>O'zbekistondagi qurilish materiallari uchun №1 taqqoslash va bozor platformasi. 500+ do'kon, 12,000+ mahsulot bir joyda.</p>
+        <div class="footer-social">
+          <a href="#" class="js-info" aria-label="Telegram">✈</a>
+          <a href="#" class="js-info" aria-label="Instagram">◎</a>
+          <a href="#" class="js-info" aria-label="Facebook">f</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h3>Kategoriyalar</h3>
+        <button class="footer-link" data-category="brick">G'isht &amp; Bloklar</button>
+        <button class="footer-link" data-category="paint">Bo'yoq &amp; Gips</button>
+        <button class="footer-link" data-category="plumbing">Santexnika</button>
+        <button class="footer-link" data-category="electric">Elektr</button>
+        <button class="footer-link" data-category="wood">Yog'och</button>
+        <button class="footer-link" data-category="tools">Asboblar</button>
+      </div>
+      <div class="footer-col">
+        <h3>Kompaniya</h3>
+        <a class="footer-link" href="about.html">Biz haqimizda</a>
+        <a class="footer-link" href="seller.html">Sotuvchi bo'lish</a>
+        <button class="footer-link js-info">Yordam markazi</button>
+        <button class="footer-link js-info">Hamkorlik</button>
+      </div>
+      <div class="footer-col">
+        <h3>Aloqa</h3>
+        <p class="footer-contact">⌖ Andijon viloyati, Andijon shahri</p>
+        <p class="footer-contact">☎ +998 97 964 42 12</p>
+        <p class="footer-contact">✉ qurilishmollarimarket@gmail.com</p>
+      </div>
+    </div>
+    <div class="page-width footer-inner">
+      <small>© 2025 Qurilish Mollari. Barcha huquqlar himoyalangan.</small>
+      <nav>
+        <a href="#" class="js-info">Shartlar</a>
+        <a href="#" class="js-info">Maxfiylik</a>
+        <a href="#" class="js-info">Aloqa</a>
+      </nav>
+    </div>
+  </footer>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="drawer-head">
+      <h2>Savat</h2>
+      <button class="icon-button js-close-cart">×</button>
+    </div>
+    <div id="cartItems" class="cart-items"><p class="empty">Savatingiz hozircha bo'sh.</p></div>
+    <div class="drawer-total">
+      <span>Jami:</span>
+      <b id="cartTotal">0 UZS</b>
+      <button class="button primary js-checkout">Buyurtma berish</button>
+    </div>
+  </aside>
+  <aside class="cart-drawer" id="savedDrawer">
+    <div class="drawer-head">
+      <h2>Saqlanganlar</h2>
+      <button class="icon-button js-close-saved">×</button>
+    </div>
+    <div id="savedItems" class="cart-items"><p class="empty">Saqlangan mahsulotlar hali yo'q.</p></div>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+  <dialog id="productDialog">
+    <button class="icon-button dialog-close">×</button>
+    <div id="dialogBody"></div>
+  </dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
