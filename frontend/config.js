@@ -1,2 +1,2 @@
 // Backend API manzili — productionga joylashtirilganda shu bitta joyni o'zgartiring.
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'https://qurilish-mollari-api.onrender.com';
