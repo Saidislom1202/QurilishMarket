@@ -19,8 +19,27 @@ const categoryOptions = [
 const money = v => new Intl.NumberFormat('uz-UZ').format(v) + ' UZS';
 
 const UZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
+
+// Sana/vaqt har doim Toshkent vaqti bo'yicha ko'rsatiladi — brauzer/server qayerda
+// bo'lishidan qat'i nazar (aks holda xorijiy serverdagi buyurtma vaqti noto'g'ri chiqadi).
+function tashkentParts(date) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tashkent',
+    year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+  });
+  const parts = {};
+  fmt.formatToParts(date).forEach(p => { parts[p.type] = p.value; });
+  return parts;
+}
+
 function formatDate(date) {
-  return `${date.getDate()} ${UZ_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+  const p = tashkentParts(date);
+  return `${p.day} ${UZ_MONTHS[Number(p.month) - 1]} ${p.year}`;
+}
+
+function formatDateTime(date) {
+  const p = tashkentParts(date);
+  return `${p.day} ${UZ_MONTHS[Number(p.month) - 1]} ${p.year}, ${p.hour}:${p.minute}`;
 }
 
 async function apiFetch(path, options = {}) {
@@ -418,7 +437,7 @@ async function initDashboard() {
     let mine = [];
     try { mine = await apiFetch('/api/sellers/me/orders', { headers: sellerAuthHeader() }); } catch { /* ignore */ }
     document.querySelector('#ordersEmpty').hidden = mine.length > 0;
-    document.querySelector('#ordersList').innerHTML = mine.map(o => `<article class="order-card ${o.status === 'yangi' ? 'is-new' : ''}"><div class="order-head"><b>${o.buyer_name}</b>${o.status === 'yangi' ? '<span class="order-new-badge">Yangi</span>' : ''}</div><div class="order-meta"><span>📞 ${o.buyer_phone}</span><span>⌖ ${o.buyer_region || '—'}</span><span>🕐 ${new Date(o.created_at).toLocaleString('uz-UZ')}</span></div><div class="order-items">${o.items.map(i => `<span>${i.name} × ${i.qty}</span>`).join('')}</div><div class="order-total">Jami: <b>${money(o.total)}</b></div></article>`).join('');
+    document.querySelector('#ordersList').innerHTML = mine.map(o => `<article class="order-card ${o.status === 'yangi' ? 'is-new' : ''}"><div class="order-head"><b>${o.buyer_name}</b>${o.status === 'yangi' ? '<span class="order-new-badge">Yangi</span>' : ''}</div><div class="order-meta"><span>📞 ${o.buyer_phone}</span><span>⌖ ${o.buyer_region || '—'}</span><span>🕐 ${formatDateTime(new Date(o.created_at))}</span></div><div class="order-items">${o.items.map(i => `<span>${i.name} × ${i.qty}</span>`).join('')}</div><div class="order-total">Jami: <b>${money(o.total)}</b></div></article>`).join('');
     const newCount = mine.filter(o => o.status === 'yangi').length;
     const badge = document.querySelector('#ordersBadge');
     badge.hidden = newCount === 0;
@@ -433,7 +452,6 @@ async function initDashboard() {
   renderOrders();
 
   /* ---- Oylik statistika ---- */
-  const UZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
   function formatMonth(key) {
     const [y, m] = key.split('-');
     return `${UZ_MONTHS[Number(m) - 1]} ${y}`;
@@ -443,8 +461,21 @@ async function initDashboard() {
     let months = [];
     try { months = await apiFetch('/api/sellers/me/stats', { headers: sellerAuthHeader() }); } catch { /* ignore */ }
     document.querySelector('#statsEmpty').hidden = months.length > 0;
-    document.querySelector('#statsTable').hidden = months.length === 0;
-    document.querySelector('#statsTableBody').innerHTML = months.map(m => `<tr><td>${formatMonth(m.month)}</td><td><b>${m.order_count}</b></td><td><b>${money(m.total)}</b></td></tr>`).join('');
+    document.querySelector('#statsList').innerHTML = months.map(m => `
+      <div class="stats-month-card">
+        <div class="stats-month-head">
+          <h3>${formatMonth(m.month)}</h3>
+          <span>${m.order_count} ta buyurtma</span>
+        </div>
+        <table class="stats-table">
+          <thead><tr><th>Mahsulot</th><th>Soni</th><th>Summa</th></tr></thead>
+          <tbody>
+            ${m.products.map(p => `<tr><td>${p.name}</td><td>${p.qty}</td><td>${money(p.total)}</td></tr>`).join('')}
+            <tr class="stats-total-row"><td>Jami (oy)</td><td></td><td><b>${money(m.total)}</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+    `).join('');
   }
   renderMonthlyStats();
 
@@ -453,7 +484,7 @@ async function initDashboard() {
     let list = [];
     try { list = await apiFetch('/api/sellers/me/messages', { headers: sellerAuthHeader() }); } catch { /* ignore */ }
     document.querySelector('#messagesEmpty').hidden = list.length > 0;
-    document.querySelector('#messagesList').innerHTML = list.map(m => `<article class="order-card ${m.read ? '' : 'is-new'}"><div class="order-head">${m.read ? '' : '<span class="order-new-badge">Yangi</span>'}</div><p class="blocked-note" style="color:var(--text);margin:0 0 6px">${m.message}</p><div class="order-meta"><span>🕐 ${new Date(m.created_at).toLocaleString('uz-UZ')}</span></div></article>`).join('');
+    document.querySelector('#messagesList').innerHTML = list.map(m => `<article class="order-card ${m.read ? '' : 'is-new'}"><div class="order-head">${m.read ? '' : '<span class="order-new-badge">Yangi</span>'}</div><p class="blocked-note" style="color:var(--text);margin:0 0 6px">${m.message}</p><div class="order-meta"><span>🕐 ${formatDateTime(new Date(m.created_at))}</span></div></article>`).join('');
     const unread = list.filter(m => !m.read).length;
     const badge = document.querySelector('#messagesBadge');
     badge.hidden = unread === 0;

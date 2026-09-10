@@ -99,9 +99,26 @@ document.querySelectorAll('.dash-tab').forEach(tab => {
 });
 
 const UZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
+
+// Sana/vaqt har doim Toshkent vaqti bo'yicha ko'rsatiladi.
+function tashkentParts(date) {
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Tashkent',
+    year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+  });
+  const parts = {};
+  fmt.formatToParts(date).forEach(p => { parts[p.type] = p.value; });
+  return parts;
+}
+
 function formatBlockedUntil(iso) {
-  const d = new Date(iso);
-  return `${d.getDate()} ${UZ_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  const p = tashkentParts(new Date(iso));
+  return `${p.day} ${UZ_MONTHS[Number(p.month) - 1]} ${p.year}`;
+}
+
+function formatDateTime(date) {
+  const p = tashkentParts(date);
+  return `${p.day} ${UZ_MONTHS[Number(p.month) - 1]} ${p.year}, ${p.hour}:${p.minute}`;
 }
 
 async function renderSellers() {
@@ -126,7 +143,7 @@ async function renderSellers() {
         <span>📞 ${s.phone}</span>
         <span>✉ ${s.email || '—'}</span>
         <span>⌖ ${s.region || '—'}</span>
-        <span>🕐 ${new Date(s.created_at).toLocaleString('uz-UZ')}</span>
+        <span>🕐 ${formatDateTime(new Date(s.created_at))}</span>
       </div>
       ${s.is_blocked ? `<p class="blocked-note">Sabab: ${s.blocked_reason || '—'}${s.blocked_until ? ` · ${formatBlockedUntil(s.blocked_until)}gacha` : ' · muddatsiz'}</p>` : ''}
       ${activeStatus === 'pending' ? `<div class="profile-actions">

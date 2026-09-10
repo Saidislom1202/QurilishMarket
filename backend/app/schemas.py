@@ -196,7 +196,14 @@ class AdminStatsOut(BaseModel):
 
 # ---------- Seller monthly stats ----------
 
+class ProductStatOut(BaseModel):
+    name: str
+    qty: int
+    total: int
+
+
 class MonthlyStatOut(BaseModel):
     month: str  # "YYYY-MM"
     order_count: int
     total: int
+    products: list[ProductStatOut]

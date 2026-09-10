@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 
 from ..database import get_session
 from ..deps import get_current_seller
-from ..models import Seller, SellerMessage, seller_public_fields
+from ..models import Seller, SellerMessage, ensure_utc, seller_public_fields
 from ..schemas import (
     SellerAuthOut,
     SellerLoginIn,
@@ -83,7 +83,7 @@ def my_messages(
     messages = session.exec(
         select(SellerMessage).where(SellerMessage.seller_id == seller.id).order_by(SellerMessage.created_at.desc())
     ).all()
-    return [SellerMessageOut(**m.model_dump()) for m in messages]
+    return [SellerMessageOut(**{**m.model_dump(), "created_at": ensure_utc(m.created_at)}) for m in messages]
 
 
 @router.post("/me/messages/mark-read", status_code=status.HTTP_204_NO_CONTENT)

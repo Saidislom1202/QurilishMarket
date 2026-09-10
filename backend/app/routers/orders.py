@@ -5,8 +5,18 @@ from sqlmodel import Session, select
 
 from ..database import get_session
 from ..deps import get_current_seller
-from ..models import Order, OrderItem, OrderStatus, Product, Seller, SellerStatus, is_effectively_blocked
-from ..schemas import MonthlyStatOut, OrderCreateIn, OrderCreateResult, OrderItemOut, OrderOut
+from ..models import (
+    Order,
+    OrderItem,
+    OrderStatus,
+    Product,
+    Seller,
+    SellerStatus,
+    ensure_utc,
+    is_effectively_blocked,
+    to_tashkent,
+)
+from ..schemas import MonthlyStatOut, OrderCreateIn, OrderCreateResult, OrderItemOut, OrderOut, ProductStatOut
 
 router = APIRouter(prefix="/api", tags=["orders"])
 
@@ -71,7 +81,7 @@ def my_orders(
                 buyer_region=o.buyer_region,
                 total=o.total,
                 status=o.status,
-                created_at=o.created_at,
+                created_at=ensure_utc(o.created_at),
                 items=[OrderItemOut(name=i.name, qty=i.qty, price=i.price) for i in items],
             )
         )
@@ -83,15 +93,38 @@ def my_monthly_stats(
     seller: Seller = Depends(get_current_seller),
     session: Session = Depends(get_session),
 ):
-    orders = session.exec(select(Order).where(Order.seller_id == seller.id)).all()
-    monthly: dict[str, dict[str, int]] = defaultdict(lambda: {"order_count": 0, "total": 0})
-    for o in orders:
-        key = o.created_at.strftime("%Y-%m")
-        monthly[key]["order_count"] += 1
-        monthly[key]["total"] += o.total
+    rows = session.exec(
+        select(Order, OrderItem)
+        .join(OrderItem, OrderItem.order_id == Order.id)
+        .where(Order.seller_id == seller.id)
+    ).all()
+
+    # Oy chegarasi ham Toshkent vaqti bo'yicha aniqlanadi (UTC bo'yicha emas),
+    # aks holda kechqurun/tunda tushgan buyurtma noto'g'ri oyga tushib qolishi mumkin.
+    monthly: dict[str, dict] = defaultdict(lambda: {"order_ids": set(), "products": defaultdict(lambda: {"qty": 0, "total": 0})})
+    for order, item in rows:
+        key = to_tashkent(order.created_at).strftime("%Y-%m")
+        bucket = monthly[key]
+        bucket["order_ids"].add(order.id)
+        p = bucket["products"][item.name]
+        p["qty"] += item.qty
+        p["total"] += item.price * item.qty
 
     months = sorted(monthly.keys(), reverse=True)[:12]
-    return [MonthlyStatOut(month=m, order_count=monthly[m]["order_count"], total=monthly[m]["total"]) for m in months]
+    result = []
+    for key in months:
+        bucket = monthly[key]
+        products = [
+            ProductStatOut(name=name, qty=v["qty"], total=v["total"])
+            for name, v in sorted(bucket["products"].items(), key=lambda kv: -kv[1]["total"])
+        ]
+        result.append(MonthlyStatOut(
+            month=key,
+            order_count=len(bucket["order_ids"]),
+            total=sum(p.total for p in products),
+            products=products,
+        ))
+    return result
 
 
 @router.post("/sellers/me/orders/mark-viewed", status_code=status.HTTP_204_NO_CONTENT)

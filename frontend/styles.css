@@ -2169,10 +2169,45 @@ button:not(:disabled):active,.button:active {
   overflow-x: auto;
 }
 
+.stats-month-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+.stats-month-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.stats-month-head h3 {
+  margin: 0;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.stats-month-head span {
+  color: #7589a8;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .stats-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 6px;
+}
+
+.stats-total-row td {
+  border-bottom: none;
+  border-top: 2px solid var(--line);
+  font-weight: 800;
 }
 
 .stats-table th,.stats-table td {

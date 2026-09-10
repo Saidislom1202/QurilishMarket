@@ -1,12 +1,26 @@
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 from sqlmodel import SQLModel, Field, Relationship
+
+TASHKENT_TZ = ZoneInfo("Asia/Tashkent")
 
 
 def now_utc() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def ensure_utc(dt: datetime) -> datetime:
+    # DB drayverlari (SQLite/Postgres) datetime'ni odatda tzinfo'siz (naive)
+    # qaytaradi, lekin biz doim UTC deb yozganmiz — shuni aniq belgilaymiz,
+    # aks holda frontend uni noto'g'ri (brauzer vaqti deb) o'qib qo'yadi.
+    return dt if dt.tzinfo is not None else dt.replace(tzinfo=timezone.utc)
+
+
+def to_tashkent(dt: datetime) -> datetime:
+    return ensure_utc(dt).astimezone(TASHKENT_TZ)
 
 
 class SellerStatus(str, Enum):
@@ -67,6 +81,9 @@ def is_effectively_blocked(seller: "Seller") -> bool:
 def seller_public_fields(seller: "Seller") -> dict:
     data = seller.model_dump()
     data["is_blocked"] = is_effectively_blocked(seller)
+    data["created_at"] = ensure_utc(seller.created_at)
+    if seller.blocked_until is not None:
+        data["blocked_until"] = ensure_utc(seller.blocked_until)
     return data
 
 
