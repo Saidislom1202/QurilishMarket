@@ -306,11 +306,14 @@ async function initDashboard() {
   /* ---- Mahsulotlar ---- */
   document.querySelector('#productCategory').innerHTML = categoryOptions.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
 
+  let myProductsCache = [];
+
   async function renderMyProducts() {
     let mine = [];
     try { mine = await apiFetch('/api/sellers/me/products', { headers: sellerAuthHeader() }); } catch { /* ignore */ }
+    myProductsCache = mine;
     document.querySelector('#sellerProductsEmpty').hidden = mine.length > 0;
-    document.querySelector('#sellerProductsGrid').innerHTML = mine.map(p => `<article class="seller-product-card"><div class="product-image" style="background-image:url('${p.image}')">${p.discount ? `<span class="discount">${p.discount}</span>` : ''}</div><div class="seller-product-info"><b>${p.name}</b><span>${money(p.price)} / ${p.unit}</span><button class="button outline delete-product" data-id="${p.id}" type="button">O'chirish</button></div></article>`).join('');
+    document.querySelector('#sellerProductsGrid').innerHTML = mine.map(p => `<article class="seller-product-card"><div class="product-image" style="background-image:url('${p.image}')">${p.discount ? `<span class="discount">${p.discount}</span>` : ''}</div><div class="seller-product-info"><b>${p.name}</b><span>${money(p.price)} / ${p.unit}</span><div class="seller-product-actions"><button class="button outline edit-product" data-id="${p.id}" type="button">Tahrirlash</button><button class="button outline delete-product" data-id="${p.id}" type="button">O'chirish</button></div></div></article>`).join('');
   }
   renderMyProducts();
 
@@ -338,6 +341,7 @@ async function initDashboard() {
   }
 
   let productImageBlob = null;
+  let editingProductId = null;
   const productImageFileEl = document.querySelector('#productImageFile');
   const productImagePreviewEl = document.querySelector('#productImagePreview');
   const productImagePreviewImgEl = document.querySelector('#productImagePreviewImg');
@@ -359,25 +363,39 @@ async function initDashboard() {
     }
   });
 
+  function resetProductForm() {
+    editingProductId = null;
+    const form = document.querySelector('#productForm');
+    form.reset();
+    productImageBlob = null;
+    productImagePreviewEl.hidden = true;
+    document.querySelector('#productFormError').hidden = true;
+    document.querySelector('#productSubmitBtn').textContent = 'Saqlash';
+  }
+
   document.querySelector('#addProductBtn').addEventListener('click', () => {
     const form = document.querySelector('#productForm');
-    form.hidden = !form.hidden;
-    if (!form.hidden) {
-      form.reset();
-      productImageBlob = null;
-      productImagePreviewEl.hidden = true;
-      document.querySelector('#productFormError').hidden = true;
+    if (!form.hidden && editingProductId === null) {
+      form.hidden = true;
+      return;
     }
+    resetProductForm();
+    form.hidden = false;
   });
 
   document.querySelector('#productCancelBtn').addEventListener('click', () => {
+    resetProductForm();
     document.querySelector('#productForm').hidden = true;
   });
 
   document.querySelector('#productForm').addEventListener('submit', async event => {
     event.preventDefault();
     const errorEl = document.querySelector('#productFormError');
-    if (!productImageBlob) {
+    const isEditing = editingProductId !== null;
+    const current = isEditing ? myProductsCache.find(p => p.id === editingProductId) : null;
+    let imageUrl = current ? current.image : null;
+
+    if (!productImageBlob && !imageUrl) {
       errorEl.textContent = 'Mahsulot rasmini tanlang.';
       errorEl.hidden = false;
       return;
@@ -386,50 +404,87 @@ async function initDashboard() {
     const oldPrice = Number(document.querySelector('#productOldPrice').value) || null;
 
     try {
-      const formData = new FormData();
-      formData.append('file', productImageBlob, 'photo.jpg');
-      const uploadRes = await fetch(`${API_BASE}/api/uploads/image`, {
-        method: 'POST',
-        headers: sellerAuthHeader(),
-        body: formData
-      });
-      const uploadData = await uploadRes.json();
-      if (!uploadRes.ok) throw new Error(uploadData.detail || 'Rasm yuklashda xatolik');
+      if (productImageBlob) {
+        const formData = new FormData();
+        formData.append('file', productImageBlob, 'photo.jpg');
+        const uploadRes = await fetch(`${API_BASE}/api/uploads/image`, {
+          method: 'POST',
+          headers: sellerAuthHeader(),
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.detail || 'Rasm yuklashda xatolik');
+        imageUrl = uploadData.url;
+      }
 
-      await apiFetch('/api/sellers/me/products', {
-        method: 'POST',
-        headers: sellerAuthHeader(),
-        body: JSON.stringify({
-          name: document.querySelector('#productName').value.trim(),
-          category: document.querySelector('#productCategory').value,
-          price,
-          unit: document.querySelector('#productUnit').value.trim(),
-          old_price: oldPrice,
-          image_url: uploadData.url
-        })
-      });
+      const payload = {
+        name: document.querySelector('#productName').value.trim(),
+        category: document.querySelector('#productCategory').value,
+        price,
+        unit: document.querySelector('#productUnit').value.trim(),
+        old_price: oldPrice,
+        image_url: imageUrl
+      };
+
+      if (isEditing) {
+        await apiFetch(`/api/sellers/me/products/${editingProductId}`, {
+          method: 'PUT',
+          headers: sellerAuthHeader(),
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await apiFetch('/api/sellers/me/products', {
+          method: 'POST',
+          headers: sellerAuthHeader(),
+          body: JSON.stringify(payload)
+        });
+      }
     } catch (e) {
       errorEl.textContent = e.message;
       errorEl.hidden = false;
       return;
     }
 
+    const wasEditing = isEditing;
+    resetProductForm();
     renderMyProducts();
     document.querySelector('#productForm').hidden = true;
-    toast('Mahsulot qo‘shildi');
+    toast(wasEditing ? 'Mahsulot yangilandi' : 'Mahsulot qo‘shildi');
   });
 
   document.querySelector('#sellerProductsGrid').addEventListener('click', async event => {
-    const btn = event.target.closest('.delete-product');
-    if (!btn) return;
-    try {
-      await apiFetch(`/api/sellers/me/products/${btn.dataset.id}`, { method: 'DELETE', headers: sellerAuthHeader() });
-    } catch (e) {
-      toast(e.message);
+    const editBtn = event.target.closest('.edit-product');
+    const deleteBtn = event.target.closest('.delete-product');
+
+    if (editBtn) {
+      const p = myProductsCache.find(x => String(x.id) === editBtn.dataset.id);
+      if (!p) return;
+      resetProductForm();
+      editingProductId = p.id;
+      document.querySelector('#productName').value = p.name;
+      document.querySelector('#productCategory').value = p.category;
+      document.querySelector('#productPrice').value = p.price;
+      document.querySelector('#productUnit').value = p.unit;
+      document.querySelector('#productOldPrice').value = p.old || '';
+      productImagePreviewImgEl.src = p.image;
+      productImagePreviewEl.hidden = false;
+      document.querySelector('#productSubmitBtn').textContent = 'Yangilash';
+      const form = document.querySelector('#productForm');
+      form.hidden = false;
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    renderMyProducts();
-    toast('Mahsulot o‘chirildi');
+
+    if (deleteBtn) {
+      try {
+        await apiFetch(`/api/sellers/me/products/${deleteBtn.dataset.id}`, { method: 'DELETE', headers: sellerAuthHeader() });
+      } catch (e) {
+        toast(e.message);
+        return;
+      }
+      renderMyProducts();
+      toast('Mahsulot o‘chirildi');
+    }
   });
 
   /* ---- Buyurtmalar ---- */

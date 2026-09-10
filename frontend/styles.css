@@ -2052,9 +2052,19 @@ button:not(:disabled):active,.button:active {
   font-size: 13px;
 }
 
-.seller-product-info .button {
-  width: 100%;
+.seller-product-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.seller-product-actions .button {
+  flex: 1;
   min-height: 36px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.seller-product-actions .delete-product {
   color: #c73a3a;
   border-color: #f0cfcf;
 }

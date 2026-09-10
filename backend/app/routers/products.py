@@ -3,7 +3,7 @@ from sqlmodel import Session, or_, select
 
 from ..database import get_session
 from ..deps import get_current_seller
-from ..models import Product, Seller, SellerStatus, is_effectively_blocked, now_utc
+from ..models import OrderItem, Product, Seller, SellerStatus, is_effectively_blocked, now_utc
 from ..schemas import ProductCreateIn, ProductOut, ShopOut
 
 router = APIRouter(prefix="/api", tags=["products"])
@@ -125,6 +125,31 @@ def create_product(
     return _to_product_out(product, seller)
 
 
+@router.put("/sellers/me/products/{product_id}", response_model=ProductOut)
+def update_product(
+    product_id: int,
+    data: ProductCreateIn,
+    seller: Seller = Depends(get_current_seller),
+    session: Session = Depends(get_session),
+):
+    product = session.get(Product, product_id)
+    if not product or product.seller_id != seller.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Mahsulot topilmadi")
+    if is_effectively_blocked(seller):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Do'koningiz bloklangan, mahsulotni tahrirlay olmaysiz.")
+
+    product.name = data.name.strip()
+    product.category = data.category
+    product.price = data.price
+    product.unit = data.unit.strip()
+    product.old_price = data.old_price
+    product.image_url = data.image_url
+    session.add(product)
+    session.commit()
+    session.refresh(product)
+    return _to_product_out(product, seller)
+
+
 @router.delete("/sellers/me/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_product(
     product_id: int,
@@ -134,5 +159,14 @@ def delete_product(
     product = session.get(Product, product_id)
     if not product or product.seller_id != seller.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Mahsulot topilmadi")
+
+    # Bu mahsulot avval buyurtma qilingan bo'lishi mumkin — order_items da nomi/narxi
+    # allaqachon saqlangan, shuning uchun havolani uzib qo'yamiz (Postgresda FK
+    # cheklovi tufayli mahsulotni to'g'ridan-to'g'ri o'chirish xatolik berardi).
+    linked_items = session.exec(select(OrderItem).where(OrderItem.product_id == product_id)).all()
+    for item in linked_items:
+        item.product_id = None
+        session.add(item)
+
     session.delete(product)
     session.commit()
