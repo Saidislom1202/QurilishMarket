@@ -30,6 +30,18 @@
       </div>
     </section>
 
+    <section class="section" id="blockedView" hidden>
+      <div class="page-width auth-page-wrap">
+        <div class="auth-page-card" style="text-align:center">
+          <p class="sale-label">BLOKLANGAN</p>
+          <h2>Do'koningiz bloklangan</h2>
+          <p id="blockedReasonText">Sabab ko'rsatilmagan.</p>
+          <p id="blockedUntilText"></p>
+          <button class="button outline" id="blockedLogoutBtn" type="button">Chiqish</button>
+        </div>
+      </div>
+    </section>
+
     <section class="section" id="rejectedView" hidden>
       <div class="page-width auth-page-wrap">
         <div class="auth-page-card" style="text-align:center">
@@ -47,6 +59,7 @@
           <button class="dash-tab active" data-tab="shop" type="button">Do'kon</button>
           <button class="dash-tab" data-tab="products" type="button">Mahsulotlar</button>
           <button class="dash-tab" data-tab="orders" type="button">Buyurtmalar<em id="ordersBadge" hidden>0</em></button>
+          <button class="dash-tab" data-tab="messages" type="button">Xabarlar<em id="messagesBadge" hidden>0</em></button>
         </div>
 
         <div class="dash-panel" id="tab-shop">
@@ -100,6 +113,12 @@
             </table>
           </div>
           <p class="empty" id="statsEmpty" hidden>Hali buyurtma tarixi yo'q.</p>
+        </div>
+
+        <div class="dash-panel" id="tab-messages" hidden>
+          <div class="section-title"><div><h2>Xabarlar</h2><p>Platforma ma'muriyatidan kelgan xabarlar</p></div></div>
+          <div id="messagesList"></div>
+          <p class="empty" id="messagesEmpty" hidden>Hali xabar yo'q.</p>
         </div>
       </div>
     </section>

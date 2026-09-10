@@ -72,6 +72,9 @@ class SellerOut(BaseModel):
     email: str
     region: str
     status: SellerStatus
+    is_blocked: bool
+    blocked_until: datetime | None = None
+    blocked_reason: str = ""
 
 
 class SellerAuthOut(BaseModel):
@@ -164,12 +167,29 @@ class SellerAdminOut(SellerOut):
     created_at: datetime
 
 
+class BlockSellerIn(BaseModel):
+    reason: str
+    days: int | None = None  # None = butunlay bloklash
+
+
+class SellerMessageIn(BaseModel):
+    message: str
+
+
+class SellerMessageOut(BaseModel):
+    id: int
+    message: str
+    read: bool
+    created_at: datetime
+
+
 class AdminStatsOut(BaseModel):
     total_buyers: int
     total_sellers: int
     sellers_pending: int
     sellers_approved: int
     sellers_rejected: int
+    sellers_blocked: int
     total_products: int
     total_orders: int
 

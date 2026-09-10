@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 
 from ..database import get_session
 from ..deps import get_current_seller
-from ..models import Order, OrderItem, OrderStatus, Product, Seller, SellerStatus
+from ..models import Order, OrderItem, OrderStatus, Product, Seller, SellerStatus, is_effectively_blocked
 from ..schemas import MonthlyStatOut, OrderCreateIn, OrderCreateResult, OrderItemOut, OrderOut
 
 router = APIRouter(prefix="/api", tags=["orders"])
@@ -22,7 +22,7 @@ def create_order(data: OrderCreateIn, session: Session = Depends(get_session)):
         if not product or item.qty < 1:
             continue
         seller = session.get(Seller, product.seller_id)
-        if not seller or seller.status != SellerStatus.approved:
+        if not seller or seller.status != SellerStatus.approved or is_effectively_blocked(seller):
             continue
         by_seller[product.seller_id].append((product, item.qty))
 

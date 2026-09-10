@@ -47,6 +47,31 @@
       </div>
     </section>
   </main>
+
+  <dialog class="auth-dialog" id="actionDialog">
+    <div class="auth-content">
+      <button class="icon-button close-action" aria-label="Yopish">×</button>
+      <p class="sale-label" id="actionTag">XABAR YUBORISH</p>
+      <h2 id="actionTitle">Sotuvchiga xabar</h2>
+      <p id="actionSubtitle">Xabar sotuvchining panelida ko'rinadi.</p>
+      <form id="actionForm">
+        <label><span>Xabar matni</span><textarea id="actionMessage" required rows="4" placeholder="Xabar matnini kiriting"></textarea></label>
+        <label id="actionDurationField" hidden>
+          <span>Bloklash muddati</span>
+          <select id="actionDuration">
+            <option value="">Butunlay (muddatsiz)</option>
+            <option value="1">1 kunga</option>
+            <option value="3">3 kunga</option>
+            <option value="7">7 kunga</option>
+            <option value="30">30 kunga</option>
+          </select>
+        </label>
+        <p class="auth-error" id="actionError" hidden></p>
+        <button class="button primary" type="submit" id="actionSubmit">Yuborish</button>
+      </form>
+    </div>
+  </dialog>
+
   <div class="toast" id="toast" role="status"></div>
   <script src="config.js"></script>
   <script src="admin.js"></script>

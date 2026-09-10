@@ -18,6 +18,11 @@ const categoryOptions = [
 
 const money = v => new Intl.NumberFormat('uz-UZ').format(v) + ' UZS';
 
+const UZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentyabr', 'Oktyabr', 'Noyabr', 'Dekabr'];
+function formatDate(date) {
+  return `${date.getDate()} ${UZ_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
@@ -181,7 +186,7 @@ async function initDashboard() {
   }
   localStorage.setItem('qurilish-seller-session', JSON.stringify(seller));
 
-  document.querySelectorAll('#pendingLogoutBtn,#rejectedLogoutBtn,#sellerLogoutBtn').forEach(btn => {
+  document.querySelectorAll('#pendingLogoutBtn,#rejectedLogoutBtn,#blockedLogoutBtn,#sellerLogoutBtn').forEach(btn => {
     btn?.addEventListener('click', () => {
       clearSellerSession();
       location.href = 'seller.html';
@@ -196,6 +201,16 @@ async function initDashboard() {
     document.querySelector('#rejectedView').hidden = false;
     return;
   }
+  if (seller.is_blocked) {
+    document.querySelector('#blockedReasonText').textContent = seller.blocked_reason
+      ? `Sabab: ${seller.blocked_reason}`
+      : 'Sabab ko\'rsatilmagan.';
+    document.querySelector('#blockedUntilText').textContent = seller.blocked_until
+      ? `Blok muddati: ${formatDate(new Date(seller.blocked_until))}gacha`
+      : "Bu — muddatsiz blok. Savollar uchun biz bilan bog'laning: +998 97 964 42 12";
+    document.querySelector('#blockedView').hidden = false;
+    return;
+  }
 
   document.querySelector('#dashboardView').hidden = false;
   dashShopNameEl.textContent = seller.shop_name;
@@ -205,6 +220,7 @@ async function initDashboard() {
       document.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('active', t === tab));
       document.querySelectorAll('.dash-panel').forEach(p => p.hidden = p.id !== `tab-${tab.dataset.tab}`);
       if (tab.dataset.tab === 'orders') { markOrdersViewed(); renderMonthlyStats(); }
+      if (tab.dataset.tab === 'messages') markMessagesRead();
     });
   });
 
@@ -431,4 +447,23 @@ async function initDashboard() {
     document.querySelector('#statsTableBody').innerHTML = months.map(m => `<tr><td>${formatMonth(m.month)}</td><td><b>${m.order_count}</b></td><td><b>${money(m.total)}</b></td></tr>`).join('');
   }
   renderMonthlyStats();
+
+  /* ---- Xabarlar ---- */
+  async function renderMessages() {
+    let list = [];
+    try { list = await apiFetch('/api/sellers/me/messages', { headers: sellerAuthHeader() }); } catch { /* ignore */ }
+    document.querySelector('#messagesEmpty').hidden = list.length > 0;
+    document.querySelector('#messagesList').innerHTML = list.map(m => `<article class="order-card ${m.read ? '' : 'is-new'}"><div class="order-head">${m.read ? '' : '<span class="order-new-badge">Yangi</span>'}</div><p class="blocked-note" style="color:var(--text);margin:0 0 6px">${m.message}</p><div class="order-meta"><span>🕐 ${new Date(m.created_at).toLocaleString('uz-UZ')}</span></div></article>`).join('');
+    const unread = list.filter(m => !m.read).length;
+    const badge = document.querySelector('#messagesBadge');
+    badge.hidden = unread === 0;
+    badge.textContent = unread;
+  }
+
+  async function markMessagesRead() {
+    try { await apiFetch('/api/sellers/me/messages/mark-read', { method: 'POST', headers: sellerAuthHeader() }); } catch { /* ignore */ }
+    setTimeout(renderMessages, 1200);
+  }
+
+  renderMessages();
 }

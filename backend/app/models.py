@@ -43,10 +43,31 @@ class Seller(SQLModel, table=True):
     region: str = ""
     password_hash: str
     status: SellerStatus = Field(default=SellerStatus.pending, index=True)
+    is_blocked: bool = Field(default=False, index=True)
+    blocked_until: Optional[datetime] = None
+    blocked_reason: str = ""
     created_at: datetime = Field(default_factory=now_utc)
 
     products: list["Product"] = Relationship(back_populates="seller")
     orders: list["Order"] = Relationship(back_populates="seller")
+    messages: list["SellerMessage"] = Relationship(back_populates="seller")
+
+
+def is_effectively_blocked(seller: "Seller") -> bool:
+    if not seller.is_blocked:
+        return False
+    if seller.blocked_until is None:
+        return True
+    until = seller.blocked_until
+    if until.tzinfo is None:
+        until = until.replace(tzinfo=timezone.utc)
+    return until > now_utc()
+
+
+def seller_public_fields(seller: "Seller") -> dict:
+    data = seller.model_dump()
+    data["is_blocked"] = is_effectively_blocked(seller)
+    return data
 
 
 class Product(SQLModel, table=True):
@@ -80,6 +101,18 @@ class Order(SQLModel, table=True):
 
     seller: Optional[Seller] = Relationship(back_populates="orders")
     items: list["OrderItem"] = Relationship(back_populates="order")
+
+
+class SellerMessage(SQLModel, table=True):
+    __tablename__ = "seller_messages"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    seller_id: int = Field(foreign_key="sellers.id", index=True)
+    message: str
+    read: bool = Field(default=False, index=True)
+    created_at: datetime = Field(default_factory=now_utc)
+
+    seller: Optional[Seller] = Relationship(back_populates="messages")
 
 
 class OrderItem(SQLModel, table=True):

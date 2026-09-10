@@ -1,12 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlmodel import Session, or_, select
 
 from ..database import get_session
 from ..deps import get_current_seller
-from ..models import Product, Seller, SellerStatus
+from ..models import Product, Seller, SellerStatus, is_effectively_blocked, now_utc
 from ..schemas import ProductCreateIn, ProductOut, ShopOut
 
 router = APIRouter(prefix="/api", tags=["products"])
+
+
+def _not_blocked(query):
+    # Bloklanmagan, YOKI vaqtinchalik blok muddati allaqachon tugagan sotuvchilar
+    now = now_utc()
+    return query.where(
+        or_(Seller.is_blocked == False, (Seller.blocked_until != None) & (Seller.blocked_until <= now))  # noqa: E712,E711
+    )
 
 
 def _discount(price: int, old_price: int | None) -> str | None:
@@ -40,6 +48,7 @@ def list_products(
     session: Session = Depends(get_session),
 ):
     query = select(Product, Seller).join(Seller).where(Seller.status == SellerStatus.approved)
+    query = _not_blocked(query)
     if category and category not in ("all", "sale"):
         query = query.where(Product.category == category)
     rows = session.exec(query).all()
@@ -56,6 +65,7 @@ def list_products(
 @router.get("/shops", response_model=list[ShopOut])
 def list_shops(region: str | None = None, session: Session = Depends(get_session)):
     query = select(Seller).where(Seller.status == SellerStatus.approved)
+    query = _not_blocked(query)
     if region:
         query = query.where(Seller.region == region)
     sellers = session.exec(query).all()
@@ -94,6 +104,11 @@ def create_product(
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
             "Do'koningiz hali admin tomonidan tasdiqlanmagan.",
+        )
+    if is_effectively_blocked(seller):
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Do'koningiz bloklangan, mahsulot qo'sha olmaysiz.",
         )
     product = Product(
         seller_id=seller.id,

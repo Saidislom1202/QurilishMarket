@@ -1684,7 +1684,7 @@ button:not(:disabled):active,.button:active {
   font-weight: 800;
 }
 
-.auth-content input,.auth-content select {
+.auth-content input,.auth-content select,.auth-content textarea {
   width: 100%;
   height: 44px;
   border: 1px solid #d3ddea;
@@ -1695,7 +1695,14 @@ button:not(:disabled):active,.button:active {
   outline: none;
 }
 
-.auth-content input:focus,.auth-content select:focus {
+.auth-content textarea {
+  height: auto;
+  padding: 10px 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.auth-content input:focus,.auth-content select:focus,.auth-content textarea:focus {
   border-color: var(--orange);
   box-shadow: 0 0 0 2px rgba(255,164,0,.12);
 }
@@ -1747,13 +1754,15 @@ button:not(:disabled):active,.button:active {
 
 /* .outline oq matn beradi (qorong'i fonlar uchun) — bu yerda och fonda ishlatilgani uchun rangini qayta belgilaymiz */
 .auth-content .button.outline,
-.dash-panel .button.outline {
+.dash-panel .button.outline,
+.profile-actions .button.outline {
   color: var(--text);
   border-color: #cfd9e7;
 }
 
 .auth-content .button.outline:hover,
-.dash-panel .button.outline:hover {
+.dash-panel .button.outline:hover,
+.profile-actions .button.outline:hover {
   background: #f4f7fb;
 }
 
@@ -2061,6 +2070,22 @@ button:not(:disabled):active,.button:active {
 .order-card.is-new {
   border-color: var(--orange);
   background: #fffdf4;
+}
+
+.order-card.is-blocked {
+  border-color: #f0cdcd;
+  background: #fef6f6;
+}
+
+.blocked-badge {
+  background: #e02b2b !important;
+  color: #fff !important;
+}
+
+.blocked-note {
+  margin: 0 0 12px;
+  color: #b23131;
+  font-size: 13px;
 }
 
 .order-head {
