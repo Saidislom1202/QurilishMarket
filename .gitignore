@@ -23,7 +23,7 @@ mobile/ios/**/xcuserdata/
 mobile/ios/**/*.xcworkspace/xcuserdata/
 mobile/**/*.keystore
 mobile/**/*.jks
-mobile/keystore.properties
+mobile/**/keystore.properties
 
 mobile-seller/node_modules/
 mobile-seller/www/
@@ -37,4 +37,6 @@ mobile-seller/ios/**/xcuserdata/
 mobile-seller/ios/**/*.xcworkspace/xcuserdata/
 mobile-seller/**/*.keystore
 mobile-seller/**/*.jks
-mobile-seller/keystore.properties
+mobile-seller/**/keystore.properties
+mobile/keystore-passwords-TEMP.txt
+*keystore-passwords*
