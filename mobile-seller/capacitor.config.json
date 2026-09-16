@@ -1,0 +1,11 @@
+{
+  "appId": "uz.qurilishmollari.seller",
+  "appName": "QM Seller",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
