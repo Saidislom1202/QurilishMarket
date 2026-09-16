@@ -1,0 +1,50 @@
+name: iOS build check
+
+# Faqat qo'lda ishga tushiriladi yoki ios/ papkalar o'zgarganda —
+# macOS runner daqiqalari cheklangan bo'lgani uchun avtomatik har bir
+# push'da ishlamaydi. Bu ilovani Simulator uchun quradi (haqiqiy
+# qurilma/App Store uchun kerak bo'ladigan imzolash sertifikati talab
+# qilinmaydi) — faqat kod xatosiz qurilishini tasdiqlash uchun.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'mobile/ios/**'
+      - 'mobile-seller/ios/**'
+      - '.github/workflows/ios-build-check.yml'
+
+jobs:
+  build-buyer-app:
+    name: Xaridor ilovasi (build)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pod install
+        working-directory: mobile/ios/App
+        run: pod install
+      - name: Build for Simulator
+        working-directory: mobile/ios/App
+        run: |
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
+
+  build-seller-app:
+    name: Sotuvchi ilovasi (build)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pod install
+        working-directory: mobile-seller/ios/App
+        run: pod install
+      - name: Build for Simulator
+        working-directory: mobile-seller/ios/App
+        run: |
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
