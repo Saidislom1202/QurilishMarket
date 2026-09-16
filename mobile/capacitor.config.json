@@ -1,0 +1,11 @@
+{
+  "appId": "uz.qurilishmollari.app",
+  "appName": "Qurilish Mollari",
+  "webDir": "../frontend",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Qurilish Mollari</string>
+    <string name="title_activity_main">Qurilish Mollari</string>
+    <string name="package_name">uz.qurilishmollari.app</string>
+    <string name="custom_url_scheme">uz.qurilishmollari.app</string>
+</resources>
