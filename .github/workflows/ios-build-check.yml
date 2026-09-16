@@ -20,6 +20,15 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: npm install
+        working-directory: mobile
+        run: npm install
+      - name: Sync web assets
+        working-directory: mobile
+        run: npx cap copy ios
       - name: Pod install
         working-directory: mobile/ios/App
         run: pod install
@@ -37,6 +46,18 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: npm install
+        working-directory: mobile-seller
+        run: npm install
+      - name: Prepare www (frontend'dan nusxa olish)
+        working-directory: mobile-seller
+        run: npm run prepare-www
+      - name: Sync web assets
+        working-directory: mobile-seller
+        run: npx cap copy ios
       - name: Pod install
         working-directory: mobile-seller/ios/App
         run: pod install
