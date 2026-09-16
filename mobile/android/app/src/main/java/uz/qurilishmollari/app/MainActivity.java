@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.MotionEvent;
 import android.webkit.JsResult;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -41,6 +42,20 @@ public class MainActivity extends BridgeActivity {
         // target="_blank" havolalar (masalan, footer'dagi Telegram bot tugmalari)
         // WebView ichida jim o'tirib qolmasligi uchun tizim brauzerida ochiladi.
         WebView webView = getBridge().getWebView();
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
+
+        // Sahifa ochilgandan keyingi ENG BIRINCHI bosish ba'zan tugmani bosish
+        // o'rniga faqat WebView'ga fokus berish uchun sarflanib qolar edi —
+        // shuning uchun har bir bosishning eng boshida (ACTION_DOWN) fokusni
+        // oldindan olib qo'yamiz, shunda bosishning o'zi ham darhol ishlaydi.
+        webView.setOnTouchListener((v, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_DOWN && !v.hasFocus()) {
+                v.requestFocus();
+            }
+            return false;
+        });
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
@@ -72,5 +87,18 @@ public class MainActivity extends BridgeActivity {
                 webView.evaluateJavascript(INTERCEPT_SELLER_LINKS_JS, null);
             }
         });
+    }
+
+    // Activity onCreate() vaqtida oyna hali tizimdan fokus olmagan bo'ladi —
+    // shuning uchun webView.requestFocus() ni shu yerda chaqirish kerak, aks
+    // holda foydalanuvchining BIRINCHI bosishi tugmani bosish o'rniga faqat
+    // WebView'ga fokus berish uchun sarflanib, "hech narsa bo'lmadi" degan
+    // taassurot qoldirar edi.
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            getBridge().getWebView().requestFocus();
+        }
     }
 }
