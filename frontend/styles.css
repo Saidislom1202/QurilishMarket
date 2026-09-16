@@ -995,11 +995,8 @@ dialog::backdrop {
   .header-button {
     padding: 0 9px;
   }
-  .topbar {
-    gap: 10px;
-  }
-  .header-button + .header-button {
-    margin-left: 14px;
+  .js-saved {
+    margin-left: auto;
   }
   .categories-nav {
     gap: 22px;
