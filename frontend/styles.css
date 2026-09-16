@@ -995,6 +995,9 @@ dialog::backdrop {
   .header-button {
     padding: 0 9px;
   }
+  .topbar {
+    gap: 14px;
+  }
   .categories-nav {
     gap: 22px;
   }
@@ -2252,8 +2255,23 @@ button:not(:disabled):active,.button:active {
 
 @media(max-width:768px) {
   .seller-header-actions {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-basis: 100%;
     margin-left: 0;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .seller-header-actions .seller-shop-badge,
+  .seller-header-actions .button {
+    flex: 1 1 0;
+    min-width: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
