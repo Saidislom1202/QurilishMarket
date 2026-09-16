@@ -19,6 +19,8 @@ mobile/android/local.properties
 mobile/android/**/build/
 mobile/ios/App/Pods/
 mobile/ios/App/build/
+mobile/ios/**/xcuserdata/
+mobile/ios/**/*.xcworkspace/xcuserdata/
 mobile/*.keystore
 mobile/*.jks
 
@@ -30,5 +32,7 @@ mobile-seller/android/local.properties
 mobile-seller/android/**/build/
 mobile-seller/ios/App/Pods/
 mobile-seller/ios/App/build/
+mobile-seller/ios/**/xcuserdata/
+mobile-seller/ios/**/*.xcworkspace/xcuserdata/
 mobile-seller/*.keystore
 mobile-seller/*.jks
